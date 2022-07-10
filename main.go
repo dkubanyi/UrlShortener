@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"dkubanyi/urlShortener/handler"
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -11,13 +13,23 @@ import (
 )
 
 const (
-	host = "0.0.0.0"
-	port = "8080"
+	serverHostName  = "SERVER_HOST"
+	serverPortName  = "SERVER_PORT"
+	accessTokenName = "ACCESS_TOKEN"
 )
 
 func main() {
+	if err := godotenv.Load(".env"); err != nil {
+		panic("Environment variables failed to load")
+	}
+
+	host := os.Getenv(serverHostName)
+	port := os.Getenv(serverPortName)
+	accessToken := os.Getenv(accessTokenName)
+
 	server := &http.Server{
-		Addr: fmt.Sprintf("%s:%s", host, port),
+		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Handler: handler.New(host+port, accessToken),
 	}
 
 	go func() {
