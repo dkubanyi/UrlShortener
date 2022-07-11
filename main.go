@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"dkubanyi/urlShortener/handler"
+	"dkubanyi/urlShortener/storage/redis"
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
@@ -16,6 +17,8 @@ const (
 	serverHostName  = "SERVER_HOST"
 	serverPortName  = "SERVER_PORT"
 	accessTokenName = "ACCESS_TOKEN"
+	redisHostName   = "REDIS_HOST"
+	redisPortName   = "REDIS_PORT"
 )
 
 func main() {
@@ -26,10 +29,19 @@ func main() {
 	host := os.Getenv(serverHostName)
 	port := os.Getenv(serverPortName)
 	accessToken := os.Getenv(accessTokenName)
+	redisHost := os.Getenv(redisHostName)
+	redisPort := os.Getenv(redisPortName)
+
+	redis, err := redisStorage.New(redisHost, redisPort)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+
+	defer redis.Close()
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, port),
-		Handler: handler.New(host+port, accessToken),
+		Handler: handler.New(host+":"+port, accessToken, redis),
 	}
 
 	go func() {
