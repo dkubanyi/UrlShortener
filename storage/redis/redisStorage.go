@@ -1,9 +1,11 @@
 package redisStorage
 
 import (
+	"dkubanyi/urlShortener/base62"
 	"dkubanyi/urlShortener/storage"
 	"errors"
 	"github.com/go-redis/redis"
+	"math/rand"
 )
 
 func New(host, port string) (storage.Service, error) {
@@ -21,7 +23,36 @@ func New(host, port string) (storage.Service, error) {
 type redisStorage struct{ db *redis.Client }
 
 func (r *redisStorage) Save(url string) (string, error) {
-	return "", errors.New("not yet implemented")
+	existingLink, err := r.db.Get("srclnk:" + url).Result()
+
+	if existingLink != "" {
+		return existingLink, err
+	}
+
+	set := false
+	encoded := ""
+
+	for i := 1; i < 50; i++ {
+		key := rand.Uint32()
+		encoded = base62.Encode(int64(key))
+		set, err = r.db.SetNX("lnk:"+encoded, url, 0).Result()
+
+		if set {
+			break
+		}
+	}
+
+	if !set {
+		err = errors.New("failed to create new link")
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	err = r.db.Set("srclnk:"+url, encoded, 0).Err()
+
+	return encoded, err
 }
 
 func (r *redisStorage) Load(code string) (string, error) {

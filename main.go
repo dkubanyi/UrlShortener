@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 const (
@@ -31,6 +33,8 @@ func main() {
 	accessToken := os.Getenv(accessTokenName)
 	redisHost := os.Getenv(redisHostName)
 	redisPort := os.Getenv(redisPortName)
+
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	redis, err := redisStorage.New(redisHost, redisPort)
 	if err != nil {
