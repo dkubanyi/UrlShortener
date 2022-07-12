@@ -30,8 +30,8 @@ func New(prefix string, accessToken string, storage storage.Service) http.Handle
 	mux := http.NewServeMux()
 	h := handler{prefix, accessToken, storage}
 
-	// mux.Handle("/", h.redirect)
-	mux.Handle("/encode", responseHandler(h.encode))
+	mux.HandleFunc("/", h.redirect)
+	mux.HandleFunc("/encode", responseHandler(h.encode))
 	return mux
 }
 
@@ -86,9 +86,31 @@ func (h handler) encode(w io.Writer, r *http.Request) (interface{}, int, error) 
 		return nil, http.StatusInternalServerError, fmt.Errorf("Could not store in database: %v", err)
 	}
 
-	return h.prefix + c, http.StatusCreated, nil
+	fmt.Printf("%v", h.prefix+"/"+c)
+
+	return h.prefix + "/" + c, http.StatusCreated, nil
 }
 
 func (h handler) redirect(rw http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		rw.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	code := r.URL.Path[len("/"):]
 
+	getParams := r.URL.Query().Encode()
+
+	url, err := h.storage.Load(code)
+
+	if getParams != "" {
+		url = url + "?" + getParams
+	}
+
+	if err != nil {
+		rw.WriteHeader(http.StatusNotFound)
+		rw.Write([]byte("URL Not Found"))
+		return
+	}
+
+	http.Redirect(rw, r, url, http.StatusMovedPermanently)
 }
