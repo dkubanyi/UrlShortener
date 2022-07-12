@@ -23,10 +23,12 @@ However, it is presumed that you already have a running database, and you put it
 ## Usage
 Encode any URL by running:
 ```
-POST http://localhost:8080/encode
-Content-Type: application/json
-
-{ "url": "https://google.com" }
+curl --location --request POST 'localhost:8080/encode' \
+--header 'access_token: test' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "url": "https://www.google.com/"
+}'
 ```
 
 If successful, the service will return a response similar to the following:
