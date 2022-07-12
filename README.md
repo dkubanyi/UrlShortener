@@ -19,3 +19,21 @@ go build
 go run main.go
 ```
 However, it is presumed that you already have a running database, and you put its connection string into the `.env` file.
+
+## Usage
+Encode any URL by running:
+```
+POST http://localhost:8080/encode
+Content-Type: application/json
+
+{ "url": "https://google.com" }
+```
+
+If successful, the service will return a response similar to the following:
+```
+{
+    "success": true,
+    "data": "localhost:8080/tE5yk"
+}
+```
+If you then access the URL in "data", you will be redirected to the URL from your original request.
