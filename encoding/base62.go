@@ -1,4 +1,4 @@
-package base62
+package encoding
 
 import (
 	"fmt"
@@ -11,8 +11,9 @@ const (
 	length   = int64(len(alphabet))
 )
 
-// Encode number to base62.
-func Encode(n int64) string {
+type Base62Encoder struct{}
+
+func (e *Base62Encoder) Encode(n int64) string {
 	if n == 0 {
 		return string(alphabet[0])
 	}
@@ -24,10 +25,9 @@ func Encode(n int64) string {
 	return s
 }
 
-// Decode converts a base62 token to int.
-func Decode(key string) (int64, error) {
+func (e *Base62Encoder) Decode(s string) (int64, error) {
 	var n int64
-	for _, c := range []byte(key) {
+	for _, c := range []byte(s) {
 		i := strings.IndexByte(alphabet, c)
 		if i < 0 {
 			return 0, fmt.Errorf("unexpected character %c in base62 literal", c)

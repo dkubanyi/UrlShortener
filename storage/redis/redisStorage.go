@@ -1,7 +1,7 @@
 package redisStorage
 
 import (
-	"dkubanyi/urlShortener/base62"
+	"dkubanyi/urlShortener/encoding"
 	"dkubanyi/urlShortener/storage"
 	"errors"
 	"github.com/go-redis/redis"
@@ -34,7 +34,8 @@ func (r *redisStorage) Save(url string) (string, error) {
 
 	for i := 1; i < 50; i++ {
 		key := rand.Uint32()
-		encoded = base62.Encode(int64(key))
+		encoder := encoding.Base62Encoder{}
+		encoded = encoder.Encode(int64(key))
 		set, err = r.db.SetNX("lnk:"+encoded, url, 0).Result()
 
 		if set {
